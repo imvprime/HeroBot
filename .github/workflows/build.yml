@@ -41,7 +41,8 @@ jobs:
           for i in $(seq 1 60); do grep -q '^exit' server.log && break; sleep 2; done
           pkill -f "tail -f cmds"
           echo "===== SERVER LOG ====="; cat server.log; ls crash-reports 2>/dev/null && cat crash-reports/* 
-          if grep -v 'carpet/' server.log | grep -v 'MinecraftClientHttpException' | grep -qiE 'Mixin.*(fail|error)|InvalidInjection|MixinApplyError|Exception|Crash'; then echo "::error::Problems found in server log"; exit 1; fi
+          grep -vE 'carpet/|api.mojang.com|sessionserver.mojang.com|MinecraftClientHttpException|^\s+at ' server.log | grep -E 'ERROR\]|Exception|Caused by|InvalidInjection|MixinApplyError|---- Minecraft Crash' > problems.txt
+          if [ -s problems.txt ]; then echo "::error::Problems found in server log"; cat problems.txt; exit 1; fi
           grep -q 'Done (' server.log
       - uses: actions/upload-artifact@v4
         if: always()
