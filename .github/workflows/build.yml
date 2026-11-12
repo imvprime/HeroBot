@@ -39,7 +39,7 @@ jobs:
           touch cmds
           (tail -f cmds | java -Xmx2G -jar server.jar nogui > server.log 2>&1; echo "exit $?" >> server.log) &
           for i in $(seq 1 180); do grep -q 'Done (' server.log && break; grep -q '^exit' server.log && break; sleep 2; done
-          for c in "herobot" "player TestBot spawn" "player TestBot jump" "player TestBot attack continuous" "player TestBot use" "player TestBot look north" "player TestBot move forward" "player TestBot stop" "player TestBot2 spawn" "player TestBot2 attack once" "player TestBot2 kill"; do echo "$c" >> cmds; sleep 3; done
+          for c in "herobot" "player TestBot spawn" "player TestBot jump" "player TestBot attack continuous" "player TestBot use" "player TestBot look north" "player TestBot move forward" "player TestBot stop" "execute at TestBot run summon tnt ~ ~ ~ {fuse:1}" "execute at TestBot run summon creeper ~2 ~ ~ {Fuse:1,ignited:1b}" "execute at TestBot run summon arrow ~ ~3 ~ {Motion:[0.0,-1.0,0.0]}" "execute at TestBot run setblock ~1 ~ ~ minecraft:piston[facing=west]" "execute at TestBot run setblock ~2 ~ ~ minecraft:redstone_block" "execute at TestBot run summon wind_charge ~ ~1 ~" "player TestBot2 spawn" "player TestBot2 attack once" "player TestBot2 kill"; do echo "$c" >> cmds; sleep 2; done
           sleep 5; echo stop >> cmds
           for i in $(seq 1 60); do grep -q '^exit' server.log && break; sleep 2; done
           pkill -f "tail -f cmds"
