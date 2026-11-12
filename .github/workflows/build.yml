@@ -1,0 +1,32 @@
+name: Build HeroBot 26.3 (Fabric + Paper)
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [herobot-mod, herobot-plugin]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Find Carpet version for 26.3
+        id: carpet
+        run: |
+          v=$(curl -s 'https://api.modrinth.com/v2/project/carpet/version?game_versions=%5B%2226.3%22%5D&loaders=%5B%22fabric%22%5D' | jq -r '.[0].version_number')
+          echo "Carpet: $v"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+      - name: Build
+        run: chmod +x gradlew && ./gradlew :${{ matrix.target }}:shadowJar -PcarpetVersion=${{ steps.carpet.outputs.version }} --stacktrace --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-26.3
+          path: ${{ matrix.target }}/build/libs/*.jar

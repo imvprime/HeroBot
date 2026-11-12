@@ -39,12 +39,12 @@ val shadeClasspath = configurations.resolvable("shadeClasspath") {
 
 dependencies {
     minecraft(libs.minecraft)
-    mappings(loom.officialMojangMappings())
-    modImplementation(libs.fabric.loader)
+    implementation(libs.fabric.loader)
 
-    modImplementation(libs.fabric.api)
+    implementation(libs.fabric.api)
 
-    modCompileOnly(libs.carpet)
+    // Carpet for 26.3: the CI looks up the current version on Modrinth and passes -PcarpetVersion.
+    compileOnly("maven.modrinth:carpet:${findProperty("carpetVersion") ?: libs.versions.carpet.get()}")
 
     compileOnly(libs.voicechat.api)
     "clientCompileOnly"(libs.voicechat.api)
@@ -69,12 +69,9 @@ tasks {
         }
     }
 
-    // shadowJar assembles its own copy of both source sets plus the bundled dependencies, then
-    // remapJar consumes it in place of Loom's `jar`. Both un-remapped jars sit in devlibs so
-    // only the final remapped artifact lands in build/libs.
+    // 26.x ships unobfuscated, so there is no remapJar any more: the shadowJar is the final mod jar.
     shadowJar {
-        archiveClassifier = "dev-shadow"
-        destinationDirectory = layout.buildDirectory.dir("devlibs")
+        archiveClassifier = ""
 
         configurations = listOf(shadeClasspath.get())
 
@@ -86,8 +83,8 @@ tasks {
         }
     }
 
-    remapJar {
-        inputFile = shadowJar.flatMap { it.archiveFile }
+    jar {
+        archiveClassifier = "thin"
     }
 }
 

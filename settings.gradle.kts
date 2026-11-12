@@ -17,5 +17,4 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "HeroBot"
 
-// Fabric mod not ported to 26.3 yet; only the Paper plugin is built.
-include(":herobot-common", ":herobot-plugin")
+include(":herobot-common", ":herobot-mod", ":herobot-plugin")
