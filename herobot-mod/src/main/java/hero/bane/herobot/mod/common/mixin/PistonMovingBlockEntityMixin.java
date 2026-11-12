@@ -1,11 +1,7 @@
 package hero.bane.herobot.mod.common.mixin;
 
-import com.llamalad7.mixinextras.expression.Definition;
-import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import hero.bane.herobot.mod.common.bot.BotPlayer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,12 +10,11 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(PistonMovingBlockEntity.class)
 public class PistonMovingBlockEntityMixin {
 
-    @Definition(id = "entity", local = @Local(type = Entity.class))
-    @Definition(id = "ServerPlayer", type = ServerPlayer.class)
-    @Expression("entity instanceof ServerPlayer")
-    @ModifyExpressionValue(method = "moveCollidedEntities", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private static boolean isBotPlayerNotServerPlayer(boolean original, @Local Entity entity) {
-        if (entity instanceof BotPlayer) return false;
+    // 26.3: `entity instanceof ServerPlayer` became `entity.canSimulateMovement()`.
+    // Bots are simulated on the server, so pistons must push their velocity like any other entity.
+    @ModifyExpressionValue(method = "moveCollidedEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;canSimulateMovement()Z"))
+    private static boolean botPlayerCanSimulateMovement(boolean original, @com.llamalad7.mixinextras.sugar.Local Entity entity) {
+        if (entity instanceof BotPlayer) return true;
         return original;
     }
 }
