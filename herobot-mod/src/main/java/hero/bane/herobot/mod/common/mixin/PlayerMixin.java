@@ -53,12 +53,12 @@ public abstract class PlayerMixin extends LivingEntity {
             method = "causeExtraKnockback",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/world/entity/Entity;needsSync:Z",
+                    target = "Lnet/minecraft/world/entity/Entity;syncVelocity:Z",
                     ordinal = 0,
                     opcode = Opcodes.GETFIELD)
     )
     private boolean velocityModifiedAndNotBotPlayer(Entity target) {
-        return target.needsSync && !(target instanceof BotPlayer);
+        return target.syncVelocity && !(target instanceof BotPlayer);
     }
 
     @Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "java/util/List.add(Ljava/lang/Object;)Z"))

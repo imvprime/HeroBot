@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MultiPlayerGameMode.class)
 public abstract class MultiPlayerGameModeMixin {
-    @Inject(method = "handleInventoryMouseClick", at = @At("HEAD"))
+    @Inject(method = "handleContainerInput", at = @At("HEAD"))
     private void herobot$recordSlotClick(int containerId, int slotId, int button, ContainerInput clickType, Player player,
                                          CallbackInfo ci) {
         MovementRecorder.INSTANCE.onSlotClick(containerId, slotId, button, clickType);
