@@ -32,14 +32,15 @@ jobs:
           cp ../herobot-mod/build/libs/herobot-fabric-*.jar mods/
           ls mods; echo eula=true > eula.txt
           printf 'online-mode=false\nlevel-type=minecraft\\:flat\n' > server.properties
-          mkfifo in
-          (java -Dmixin.debug.verify=true -Xmx2G -jar server.jar nogui < in > server.log 2>&1; echo "exit $?" >> server.log) &
-          exec 3>in
+          set +e
+          touch cmds
+          (tail -f cmds | java -Xmx2G -jar server.jar nogui > server.log 2>&1; echo "exit $?" >> server.log) &
           for i in $(seq 1 180); do grep -q 'Done (' server.log && break; grep -q '^exit' server.log && break; sleep 2; done
-          for c in "herobot" "player TestBot spawn" "player TestBot jump" "player TestBot attack continuous" "player TestBot use" "player TestBot look north" "player TestBot move forward" "kill TestBot" "player TestBot2 spawn" "player TestBot2 kill"; do echo "$c" >&3; sleep 3; done
-          sleep 5; echo stop >&3; exec 3>&-
+          for c in "herobot" "player TestBot spawn" "player TestBot jump" "player TestBot attack continuous" "player TestBot use" "player TestBot look north" "player TestBot move forward" "kill TestBot" "player TestBot2 spawn" "player TestBot2 kill"; do echo "$c" >> cmds; sleep 3; done
+          sleep 5; echo stop >> cmds
           for i in $(seq 1 60); do grep -q '^exit' server.log && break; sleep 2; done
-          cat server.log
+          pkill -f "tail -f cmds"
+          echo "===== SERVER LOG ====="; cat server.log; ls crash-reports 2>/dev/null && cat crash-reports/* 
           if grep -qiE 'Mixin.*(fail|error)|InvalidInjection|MixinApplyError|Exception|Crash' server.log; then echo "::error::Problems found in server log"; exit 1; fi
           grep -q 'Done (' server.log
       - uses: actions/upload-artifact@v4
