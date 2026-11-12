@@ -47,5 +47,5 @@ plugin-run-paper = { group = "xyz.jpenilla.run-paper", name = "xyz.jpenilla.run-
 plugin-yml-paper = { group = "de.eldoria.plugin-yml.paper", name = "de.eldoria.plugin-yml.paper.gradle.plugin", version.ref = "plugin-yml" }
 
 [plugins]
-fabric-loom = { id = "fabric-loom", version.ref = "loom" }
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }
 paperweight-userdev = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight" }
