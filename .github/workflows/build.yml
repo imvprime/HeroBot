@@ -1,16 +1,13 @@
-name: Build HeroBot 26.3 (Fabric + Paper)
+name: Build HeroBot 26.3 (Fabric)
 
 on:
   push:
+    paths-ignore: ['.github/workflows/deps.yml', '.github/dump-cp.init.gradle.kts']
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [herobot-mod, herobot-plugin]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -22,11 +19,33 @@ jobs:
         id: carpet
         run: |
           v=$(curl -s 'https://api.modrinth.com/v2/project/carpet/version?game_versions=%5B%2226.3%22%5D&loaders=%5B%22fabric%22%5D' | jq -r '.[0].version_number')
-          echo "Carpet: $v"
           echo "version=$v" >> "$GITHUB_OUTPUT"
-      - name: Build
-        run: chmod +x gradlew && ./gradlew :${{ matrix.target }}:shadowJar -PcarpetVersion=${{ steps.carpet.outputs.version }} --stacktrace --no-daemon
+      - name: Build Fabric mod
+        run: chmod +x gradlew && ./gradlew :herobot-mod:shadowJar -PcarpetVersion=${{ steps.carpet.outputs.version }} --stacktrace --no-daemon
+      - name: Smoke test on a Fabric 26.3 dedicated server
+        run: |
+          mkdir -p srv/mods && cd srv
+          inst=$(curl -s https://meta.fabricmc.net/v2/versions/installer | jq -r '.[0].version')
+          curl -sfL -o server.jar "https://meta.fabricmc.net/v2/versions/loader/26.3/0.19.5/$inst/server/jar"
+          api=$(curl -s 'https://api.modrinth.com/v2/project/fabric-api/version?game_versions=%5B%2226.3%22%5D&loaders=%5B%22fabric%22%5D' | jq -r '.[0].files[0].url')
+          curl -sfL -o mods/fabric-api.jar "$api"
+          cp ../herobot-mod/build/libs/herobot-fabric-*.jar mods/
+          ls mods; echo eula=true > eula.txt
+          printf 'online-mode=false\nlevel-type=minecraft\\:flat\n' > server.properties
+          mkfifo in
+          (java -Dmixin.debug.verify=true -Xmx2G -jar server.jar nogui < in > server.log 2>&1; echo "exit $?" >> server.log) &
+          exec 3>in
+          for i in $(seq 1 180); do grep -q 'Done (' server.log && break; grep -q '^exit' server.log && break; sleep 2; done
+          for c in "herobot" "player TestBot spawn" "player TestBot jump" "player TestBot attack continuous" "player TestBot use" "player TestBot look north" "player TestBot move forward" "kill TestBot" "player TestBot2 spawn" "player TestBot2 kill"; do echo "$c" >&3; sleep 3; done
+          sleep 5; echo stop >&3; exec 3>&-
+          for i in $(seq 1 60); do grep -q '^exit' server.log && break; sleep 2; done
+          cat server.log
+          if grep -qiE 'Mixin.*(fail|error)|InvalidInjection|MixinApplyError|Exception|Crash' server.log; then echo "::error::Problems found in server log"; exit 1; fi
+          grep -q 'Done (' server.log
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: ${{ matrix.target }}-26.3
-          path: ${{ matrix.target }}/build/libs/*.jar
+          name: herobot-fabric-26.3
+          path: |
+            herobot-mod/build/libs/*.jar
+            srv/server.log

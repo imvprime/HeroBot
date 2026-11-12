@@ -10,7 +10,7 @@ import hero.bane.herobot.mod.client.EditorDraft;
 import hero.bane.herobot.mod.client.EditorPrefs;
 import hero.bane.herobot.mod.client.record.MovementRecorder;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
@@ -18,7 +18,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -608,20 +607,20 @@ public final class AiEditorScreen extends Screen {
     }
 
     public void openTutorial() {
-        ConfirmLinkScreen.confirmLinkNow(this, TUTORIAL_URL);
+        ConfirmLinkScreen.confirmLinkNow(this, java.net.URI.create(TUTORIAL_URL));
     }
 
     private int settingsRowY(int y) { return y + 30; }
     private int settingsRecordTreeRowY(int y) { return y + 50; }
     private int settingsAutosaveRowY(int y) { return y + 70; }
 
-    private void renderSettings(GuiGraphics g, int mouseX, int mouseY) {
+    private void renderSettings(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         int w = 180, h = 104;
         int x = (width - w) / 2, y = (height - h) / 2;
         g.fill(0, 0, width, height, 0x88000000);
         g.fill(x, y, x + w, y + h, 0xFF1E1E1E);
         g.fill(x - 1, y - 1, x + w + 1, y, 0xFFFFFFFF);
-        g.drawString(font, "Settings", x + 8, y + 6, 0xFFFFFFFF, false);
+        g.text(font, "Settings", x + 8, y + 6, 0xFFFFFFFF, false);
 
         int rowY = settingsRowY(y);
         if (mouseX >= x + 6 && mouseX <= x + w - 6 && mouseY >= rowY - 2 && mouseY < rowY + 12) {
@@ -634,16 +633,16 @@ public final class AiEditorScreen extends Screen {
         if (EditorPrefs.cometsEnabled()) {
             g.fill(cbX + 2, rowY + 2, cbX + cbSize - 2, rowY + cbSize - 2, 0xFF55D07A);
         }
-        g.drawString(font, "Comets naturally spawn", cbX + cbSize + 6, rowY + 1, 0xFFE0E0E0, false);
+        g.text(font, "Comets naturally spawn", cbX + cbSize + 6, rowY + 1, 0xFFE0E0E0, false);
 
         int autosaveY = settingsAutosaveRowY(y);
         if (mouseX >= x + 6 && mouseX <= x + w - 6 && mouseY >= autosaveY - 2 && mouseY < autosaveY + 12) {
             g.fill(x + 6, autosaveY - 2, x + w - 6, autosaveY + 12, 0x66FFFFFF);
         }
         int seconds = EditorPrefs.autosaveSeconds();
-        g.drawString(font, "Autosave", x + 12, autosaveY + 1, 0xFFCFC030, false);
+        g.text(font, "Autosave", x + 12, autosaveY + 1, 0xFFCFC030, false);
         String autosaveRest = seconds == 0 ? ": off" : ": " + seconds + " s";
-        g.drawString(font, autosaveRest, x + 12 + font.width("Autosave"), autosaveY + 1, 0xFFE0E0E0, false);
+        g.text(font, autosaveRest, x + 12 + font.width("Autosave"), autosaveY + 1, 0xFFE0E0E0, false);
 
         int recordY = settingsRecordTreeRowY(y);
         if (mouseX >= x + 6 && mouseX <= x + w - 6 && mouseY >= recordY - 2 && mouseY < recordY + 12) {
@@ -654,10 +653,10 @@ public final class AiEditorScreen extends Screen {
         if (EditorPrefs.recordSingleTree()) {
             g.fill(cbX + 2, recordY + 2, cbX + cbSize - 2, recordY + cbSize - 2, 0xFF55D07A);
         }
-        g.drawString(font, "Record", cbX + cbSize + 6, recordY + 1, 0xFFD84C4C, false);
-        g.drawString(font, " as one tree", cbX + cbSize + 6 + font.width("Record"), recordY + 1, 0xFFE0E0E0, false);
+        g.text(font, "Record", cbX + cbSize + 6, recordY + 1, 0xFFD84C4C, false);
+        g.text(font, " as one tree", cbX + cbSize + 6 + font.width("Record"), recordY + 1, 0xFFE0E0E0, false);
 
-        g.drawString(font, "Esc to close", x + 8, y + h - 12, 0xFF909090, false);
+        g.text(font, "Esc to close", x + 8, y + h - 12, 0xFF909090, false);
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -718,7 +717,7 @@ public final class AiEditorScreen extends Screen {
             0xFF5599FF, 0xFF7A66FF, 0xFFCC66FF, 0xFFFF5555, 0xFFFFAA33, 0xFFFFFF55, 0xFF55FF55,
     };
 
-    private void renderShortcuts(GuiGraphics g) {
+    private void renderShortcuts(GuiGraphicsExtractor g) {
         int keyW = 0, descW = 0;
         for (String[] row : shortcutLegend) {
             keyW = Math.max(keyW, font.width(row[0]));
@@ -731,22 +730,22 @@ public final class AiEditorScreen extends Screen {
         g.fill(0, 0, width, height, 0x88000000);
         g.fill(x, y, x + w, y + h, 0xFF1E1E1E);
         g.fill(x - 1, y - 1, x + w + 1, y, 0xFFFFFFFF);
-        g.drawString(font, "Shortcuts", x + 8, y + 6, 0xFFFFFFFF, false);
+        g.text(font, "Shortcuts", x + 8, y + 6, 0xFFFFFFFF, false);
 
         int keyRow = 0;
         for (int i = 0; i < shortcutLegend.length; i++) {
             int rowY = y + 24 + i * 12;
             if (shortcutLegend[i][0].isEmpty()) {
                 int tw = font.width(shortcutLegend[i][1]);
-                g.drawString(font, shortcutLegend[i][1], x + (w - tw) / 2, rowY, 0xFFCFC030, false);
+                g.text(font, shortcutLegend[i][1], x + (w - tw) / 2, rowY, 0xFFCFC030, false);
             } else {
                 int keyColor = SHORTCUT_RAINBOW[keyRow++ % SHORTCUT_RAINBOW.length];
-                g.drawString(font, shortcutLegend[i][0], x + 12, rowY, keyColor, false);
-                g.drawString(font, shortcutLegend[i][1], x + 12 + keyW + 12, rowY, 0xFFE0E0E0, false);
+                g.text(font, shortcutLegend[i][0], x + 12, rowY, keyColor, false);
+                g.text(font, shortcutLegend[i][1], x + 12 + keyW + 12, rowY, 0xFFE0E0E0, false);
             }
         }
 
-        g.drawString(font, "Esc to close", x + 8, y + h - 12, 0xFF909090, false);
+        g.text(font, "Esc to close", x + 8, y + h - 12, 0xFF909090, false);
     }
 
     private static int parseIntOr(String s, int fallback) {
@@ -819,11 +818,11 @@ public final class AiEditorScreen extends Screen {
     private boolean sortHoldHeld() {
         var window = Minecraft.getInstance().getWindow();
         if (sortHoldMouse) {
-            return GLFW.glfwGetMouseButton(window.handle(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+            return Minecraft.getInstance().mouseHandler.isLeftPressed();
         }
-        return InputConstants.isKeyDown(window, GLFW.GLFW_KEY_D)
-                && (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_CONTROL)
-                || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_CONTROL));
+        return InputConstants.isKeyDown(InputConstants.KEY_D)
+                && (InputConstants.isKeyDown(InputConstants.KEY_LCONTROL)
+                || InputConstants.isKeyDown(InputConstants.KEY_RCONTROL));
     }
 
     public void startRecording() {
@@ -1674,7 +1673,7 @@ public final class AiEditorScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         updateRegions(mouseX, mouseY);
         g.fill(0, 0, width, height, 0xFF0E0E12);
         canvas.render(g, mouseX, mouseY);
@@ -1697,28 +1696,28 @@ public final class AiEditorScreen extends Screen {
         renderChrome(g, mouseX, mouseY);
 
         int chromeX = leftW() + 4;
-        g.drawString(font, "https://discord.gg/4ta7pM4bnr",
+        g.text(font, "https://discord.gg/4ta7pM4bnr",
                 chromeX, height - 11, 0xFF707070, false);
 
         if (statusMessage != null) {
             float alpha = statusFadeTicks > 0 ? Math.clamp(statusTicks / (float) statusFadeTicks, 0f, 1f) : 1f;
             int color = (Math.round(alpha * 255) << 24) | 0x00B0FFB0;
-            g.drawString(font, statusMessage, chromeX, height - 22, color, false);
+            g.text(font, statusMessage, chromeX, height - 22, color, false);
         }
 
         String dropReason = canvas.dropReason();
         if (dropReason != null) {
-            g.drawString(font, dropReason, chromeX, height - 33, 0xFFFF6060, false);
+            g.text(font, dropReason, chromeX, height - 33, 0xFFFF6060, false);
         }
 
         if (draggingSomething && overLeftPanel(mouseX, mouseY)) {
             g.fill(paletteX, paletteY, paletteX + paletteW, paletteY + paletteH, 0x66FF3030);
-            if (!leftCollapsed) g.drawString(font, "Release to delete", paletteX + 6, paletteY + paletteH / 2, 0xFFFFFFFF, false);
+            if (!leftCollapsed) g.text(font, "Release to delete", paletteX + 6, paletteY + paletteH / 2, 0xFFFFFFFF, false);
         }
         if (draggingSomething && overRightPanel(mouseX, mouseY)) {
             int rx = width - rightW();
             g.fill(rx, topH(), width, height, 0x66FF3030);
-            if (!rightCollapsed) g.drawString(font, "Release to delete", rx + 6, topH() + (height - topH()) / 2, 0xFFFFFFFF, false);
+            if (!rightCollapsed) g.text(font, "Release to delete", rx + 6, topH() + (height - topH()) / 2, 0xFFFFFFFF, false);
         }
 
         if (paletteDragType != null) renderPaletteGhost(g);
@@ -1739,7 +1738,7 @@ public final class AiEditorScreen extends Screen {
         return mx >= width - rightW() && mx < width && my >= topH() && my < height;
     }
 
-    private void renderChrome(GuiGraphics g, int mouseX, int mouseY) {
+    private void renderChrome(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         int top = topH();
         int panel = 0xFF1A1A1A;
         int border = 0xFF000000;
@@ -1751,10 +1750,10 @@ public final class AiEditorScreen extends Screen {
         if (topCollapsed) {
             g.fill(0, 0, width, ARROW, 0xFF2A2A2A);
             g.fill(0, ARROW, width, ARROW + 1, border);
-            g.drawString(font, "▾", 2, 1, topCol, false);
+            g.text(font, "▾", 2, 1, topCol, false);
         } else {
             g.fill(0, 0, ARROW, Toolbar.HEIGHT, topHover ? 0xFF454545 : 0xFF2A2A2A);
-            g.drawString(font, "▴", 2, 7, topCol, false);
+            g.text(font, "▴", 2, 7, topCol, false);
         }
 
         int leftCol = inLeftToggle(mouseX, mouseY) ? 0xFFD0D0D0 : 0xFF808080;
@@ -1762,10 +1761,10 @@ public final class AiEditorScreen extends Screen {
         if (leftCollapsed) {
             g.fill(0, top, ARROW, height, leftBg);
             g.fill(ARROW, top, ARROW + 1, height, border);
-            g.drawString(font, leftRegion.mode == SidebarMode.HOVER ? "\uD83D\uDC7B" : "▸", 1, top + 1, leftCol, false);
+            g.text(font, leftRegion.mode == SidebarMode.HOVER ? "\uD83D\uDC7B" : "▸", 1, top + 1, leftCol, false);
         } else {
             g.fill(0, top, SIDE_W, top + ARROW, leftBg);
-            g.drawString(font, leftRegion.mode == SidebarMode.HOVER ? "\uD83D\uDC7B" : "◂", SIDE_W - ARROW + 1, top + 1, leftCol, false);
+            g.text(font, leftRegion.mode == SidebarMode.HOVER ? "\uD83D\uDC7B" : "◂", SIDE_W - ARROW + 1, top + 1, leftCol, false);
         }
 
         int rightCol = inRightToggle(mouseX, mouseY) ? 0xFFD0D0D0 : 0xFF808080;
@@ -1773,14 +1772,14 @@ public final class AiEditorScreen extends Screen {
         if (rightCollapsed) {
             g.fill(width - ARROW, top, width, height, rightBg);
             g.fill(width - ARROW - 1, top, width - ARROW, height, border);
-            g.drawString(font, rightRegion.mode == SidebarMode.HOVER ? "\uD83D\uDC7B" : "◂", width - ARROW + 1, top + 1, rightCol, false);
+            g.text(font, rightRegion.mode == SidebarMode.HOVER ? "\uD83D\uDC7B" : "◂", width - ARROW + 1, top + 1, rightCol, false);
         } else {
             g.fill(width - VAR_W, top, width, top + ARROW, rightBg);
-            g.drawString(font, rightRegion.mode == SidebarMode.HOVER ? "\uD83D\uDC7B" : "▸", width - VAR_W + 2, top + 1, rightCol, false);
+            g.text(font, rightRegion.mode == SidebarMode.HOVER ? "\uD83D\uDC7B" : "▸", width - VAR_W + 2, top + 1, rightCol, false);
         }
     }
 
-    private void renderPaletteGhost(GuiGraphics g) {
+    private void renderPaletteGhost(GuiGraphicsExtractor g) {
         BlockDef def = BlockDefRegistry.get(paletteDragType);
         String label = def.label();
         int w = font.width(label) + 12;
@@ -1788,10 +1787,10 @@ public final class AiEditorScreen extends Screen {
         g.fill(gx - 1, gy - 1, gx + w + 1, gy + 20, 0xFFFFFFFF);
         g.fill(gx, gy, gx + w, gy + 19, (def.category().color() & 0x00FFFFFF) | 0xDD000000);
         g.fill(gx, gy, gx + w, gy + 9, (def.category().color() & 0x00FFFFFF) | 0xDD000000);
-        g.drawString(font, label, gx + 6, gy + 6, 0xFFFFFFFF, false);
+        g.text(font, label, gx + 6, gy + 6, 0xFFFFFFFF, false);
     }
 
-    private void renderLoadDialog(GuiGraphics g, int mouseX, int mouseY) {
+    private void renderLoadDialog(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         int w = 220, h = 140;
         int x = (width - w) / 2, y = (height - h) / 2;
         g.fill(0, 0, width, height, 0x88000000);
@@ -1800,15 +1799,15 @@ public final class AiEditorScreen extends Screen {
         String title = deleteMode ? "Delete script (Esc to cancel)"
                 : importMode ? "Import blocks from (Esc to cancel)"
                 : "Load script (Esc to cancel)";
-        g.drawString(font, title, x + 8, y + 6, deleteMode ? 0xFFFF7070 : 0xFFFFFFFF, false);
+        g.text(font, title, x + 8, y + 6, deleteMode ? 0xFFFF7070 : 0xFFFFFFFF, false);
         if (serverScripts.isEmpty()) {
-            g.drawString(font, "No scripts on server", x + 8, y + 24, 0xFF909090, false);
+            g.text(font, "No scripts on server", x + 8, y + 24, 0xFF909090, false);
         }
         for (int i = 0; i < serverScripts.size() && i < 9; i++) {
             int ry = y + 22 + i * 12;
             boolean hover = mouseX >= x + 6 && mouseX <= x + w - 6 && mouseY >= ry && mouseY < ry + 12;
             if (hover) g.fill(x + 6, ry, x + w - 6, ry + 12, 0x66FFFFFF);
-            g.drawString(font, serverScripts.get(i), x + 10, ry + 2, 0xFFE0E0E0, false);
+            g.text(font, serverScripts.get(i), x + 10, ry + 2, 0xFFE0E0E0, false);
         }
     }
 
@@ -1837,7 +1836,7 @@ public final class AiEditorScreen extends Screen {
         return true;
     }
 
-    private void renderLoadFailedDialog(GuiGraphics g) {
+    private void renderLoadFailedDialog(GuiGraphicsExtractor g) {
         String title = "Failed to load '" + loadFailedName + "'";
         String line = "The script may be outdated or corrupted, sorry";
         int w = Math.max(220, 16 + Math.max(font.width(title), font.width(line)));
@@ -1846,10 +1845,10 @@ public final class AiEditorScreen extends Screen {
         g.fill(0, 0, width, height, 0x88000000);
         g.fill(x, y, x + w, y + h, 0xFF1E1E1E);
         g.fill(x - 1, y - 1, x + w + 1, y, 0xFFFFFFFF);
-        g.drawString(font, title, x + 8, y + 6, 0xFFFF7070, false);
-        g.drawString(font, line, x + 8, y + 20, 0xFFE0E0E0, false);
-        g.drawString(font, "Delete", x + 8, y + h - 24, 0xFFFF7070, false);
-        g.drawString(font, "Cancel", x + 8, y + h - 12, 0xFFE0E0E0, false);
+        g.text(font, title, x + 8, y + 6, 0xFFFF7070, false);
+        g.text(font, line, x + 8, y + 20, 0xFFE0E0E0, false);
+        g.text(font, "Delete", x + 8, y + h - 24, 0xFFFF7070, false);
+        g.text(font, "Cancel", x + 8, y + h - 12, 0xFFE0E0E0, false);
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -1886,7 +1885,7 @@ public final class AiEditorScreen extends Screen {
         if (settingsOpen) return settingsClick(mx, my);
         if (shortcutsOpen) { shortcutsOpen = false; return true; }
 
-        if (handleChromeClick(mx, my, (event.modifiers() & GLFW.GLFW_MOD_SHIFT) != 0)) return true;
+        if (handleChromeClick(mx, my, (event.modifiers() & InputConstants.MOD_SHIFT) != 0)) return true;
 
         if (!topCollapsed && toolbar.mouseClicked(mx, my)) return true;
         if (!leftCollapsed) {
@@ -1900,8 +1899,8 @@ public final class AiEditorScreen extends Screen {
             if (palette.inside(mx, my)) return true;
         }
         if (!rightCollapsed && (varPanel.menuOpen() || varPanel.inside(mx, my))) return varPanel.mousePressed(mx, my);
-        boolean ctrl = (event.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0;
-        boolean shift = (event.modifiers() & GLFW.GLFW_MOD_SHIFT) != 0;
+        boolean ctrl = (event.modifiers() & InputConstants.MOD_CONTROL) != 0;
+        boolean shift = (event.modifiers() & InputConstants.MOD_SHIFT) != 0;
         return canvas.mouseClicked(mx, my, button, ctrl, shift, doubled);
     }
 
@@ -1979,30 +1978,30 @@ public final class AiEditorScreen extends Screen {
         if (exprEditor.isActive()) return exprEditor.keyPressed(event);
         if (selectorEditor.isActive()) return selectorEditor.keyPressed(event);
         if (canvas.isEditingComment()) {
-            boolean cmtCtrl = (event.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0;
-            boolean cmtShift = (event.modifiers() & GLFW.GLFW_MOD_SHIFT) != 0;
+            boolean cmtCtrl = (event.modifiers() & InputConstants.MOD_CONTROL) != 0;
+            boolean cmtShift = (event.modifiers() & InputConstants.MOD_SHIFT) != 0;
             return canvas.commentKeyPressed(event.key(), cmtCtrl, cmtShift);
         }
 
         if (palette.isSearchFocused() && palette.keyPressed(event)) return true;
 
         int key = event.key();
-        boolean ctrl = (event.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0;
-        if (toolbar.isMenuOpen() && key == GLFW.GLFW_KEY_ESCAPE) { toolbar.closeMenu(); return true; }
-        if (loadFailedName != null && key == GLFW.GLFW_KEY_ESCAPE) { loadFailedName = null; return true; }
-        if (loadDialogOpen && key == GLFW.GLFW_KEY_ESCAPE) { closeLoadDialog(); return true; }
-        if (settingsOpen && key == GLFW.GLFW_KEY_ESCAPE) { settingsOpen = false; return true; }
-        if (shortcutsOpen && key == GLFW.GLFW_KEY_ESCAPE) { shortcutsOpen = false; return true; }
-        if (ctrl && key == GLFW.GLFW_KEY_A) { selectConnected(); return true; }
-        if (ctrl && key == GLFW.GLFW_KEY_C) { copySelection(); return true; }
-        if (ctrl && key == GLFW.GLFW_KEY_V) { paste(); return true; }
-        if (ctrl && key == GLFW.GLFW_KEY_Z) { undo(); return true; }
-        if (ctrl && key == GLFW.GLFW_KEY_Y) { redo(); return true; }
-        if (ctrl && key == GLFW.GLFW_KEY_S) { saveScript(); return true; }
-        if (ctrl && key == GLFW.GLFW_KEY_D) { beginSort(false); return true; }
-        if (key == GLFW.GLFW_KEY_ESCAPE) { onClose(); return true; }
-        if (key == GLFW.GLFW_KEY_DELETE || key == GLFW.GLFW_KEY_BACKSPACE) {
-            boolean shift = (event.modifiers() & GLFW.GLFW_MOD_SHIFT) != 0;
+        boolean ctrl = (event.modifiers() & InputConstants.MOD_CONTROL) != 0;
+        if (toolbar.isMenuOpen() && key == InputConstants.KEY_ESCAPE) { toolbar.closeMenu(); return true; }
+        if (loadFailedName != null && key == InputConstants.KEY_ESCAPE) { loadFailedName = null; return true; }
+        if (loadDialogOpen && key == InputConstants.KEY_ESCAPE) { closeLoadDialog(); return true; }
+        if (settingsOpen && key == InputConstants.KEY_ESCAPE) { settingsOpen = false; return true; }
+        if (shortcutsOpen && key == InputConstants.KEY_ESCAPE) { shortcutsOpen = false; return true; }
+        if (ctrl && key == InputConstants.KEY_A) { selectConnected(); return true; }
+        if (ctrl && key == InputConstants.KEY_C) { copySelection(); return true; }
+        if (ctrl && key == InputConstants.KEY_V) { paste(); return true; }
+        if (ctrl && key == InputConstants.KEY_Z) { undo(); return true; }
+        if (ctrl && key == InputConstants.KEY_Y) { redo(); return true; }
+        if (ctrl && key == InputConstants.KEY_S) { saveScript(); return true; }
+        if (ctrl && key == InputConstants.KEY_D) { beginSort(false); return true; }
+        if (key == InputConstants.KEY_ESCAPE) { onClose(); return true; }
+        if (key == InputConstants.KEY_DELETE || key == InputConstants.KEY_BACKSPACE) {
+            boolean shift = (event.modifiers() & InputConstants.MOD_SHIFT) != 0;
             if (shift) deleteSelectedBridging(); else deleteSelected();
             return true;
         }

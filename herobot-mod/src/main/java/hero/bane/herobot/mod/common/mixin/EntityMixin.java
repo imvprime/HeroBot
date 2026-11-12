@@ -1,5 +1,6 @@
 package hero.bane.herobot.mod.common.mixin;
 
+import net.minecraft.world.entity.EntityTypes;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import hero.bane.herobot.common.rule.HeroBotSettings;
@@ -75,7 +76,7 @@ public abstract class EntityMixin {
         if (!HeroBotSettings.editablePlayerNbt)
             return original.call(type);
 
-        if (type == EntityType.PLAYER)
+        if (type == EntityTypes.PLAYER)
             return true;
 
         return original.call(type);

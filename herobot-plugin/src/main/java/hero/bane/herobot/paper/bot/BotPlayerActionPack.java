@@ -575,7 +575,7 @@ public class BotPlayerActionPack implements PlayerController {
     private static void dropAndSwing(ServerPlayer player, boolean dropStack) {
         boolean dropped = !player.getInventory().getSelectedItem().isEmpty();
         player.drop(dropStack);
-        if (dropped) player.swing(InteractionHand.MAIN_HAND);
+        if (dropped) player.swing(InteractionHand.MAIN_HAND, player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
     }
 
     static HitResult getTarget(ServerPlayer player) {
@@ -702,7 +702,7 @@ public class BotPlayerActionPack implements PlayerController {
                                     if (!continuous) {
                                         for (int i = 0; i < action.hits; i++) {
                                             player.attack(target);
-                                            player.swing(InteractionHand.MAIN_HAND);
+                                            player.swing(InteractionHand.MAIN_HAND, player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
                                             player.resetAttackStrengthTicker();
                                         }
                                     } else {
@@ -721,7 +721,7 @@ public class BotPlayerActionPack implements PlayerController {
                         if (!continuous) {
                             for (int i = 0; i < action.hits; i++) {
                                 player.attack(target);
-                                player.swing(InteractionHand.MAIN_HAND);
+                                player.swing(InteractionHand.MAIN_HAND, player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
                                 player.resetAttackStrengthTicker();
                             }
                         } else {
@@ -780,7 +780,7 @@ public class BotPlayerActionPack implements PlayerController {
                             player.level().destroyBlockProgress(-1, pos, (int) (ap.curBlockDamageMP * 10));
                         }
                         player.resetLastActionTime();
-                        player.swing(InteractionHand.MAIN_HAND);
+                        player.swing(InteractionHand.MAIN_HAND, player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
                         if (action.resetMineCheck() && ap.currentBlock != null) {
                             player.gameMode.handleBlockBreakAction(ap.currentBlock, ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, side, player.level().getMaxY(), -1);
                             player.level().destroyBlockProgress(-1, ap.currentBlock, -1);
@@ -790,7 +790,7 @@ public class BotPlayerActionPack implements PlayerController {
                         return blockBroken;
                     }
                 }
-                if (!action.isContinuous) player.swing(InteractionHand.MAIN_HAND);
+                if (!action.isContinuous) player.swing(InteractionHand.MAIN_HAND, player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
                 player.resetAttackStrengthTicker();
                 player.resetLastActionTime();
                 return false;
@@ -901,7 +901,7 @@ public class BotPlayerActionPack implements PlayerController {
             @Override
             boolean execute(ServerPlayer player, Action action) {
                 InteractionHand hand = action.hand == null ? InteractionHand.MAIN_HAND : action.hand;
-                player.swing(hand);
+                player.swing(hand, player.getItemInHand(hand).getAttackAnimation(), false);
                 player.resetLastActionTime();
                 return false;
             }
@@ -927,7 +927,7 @@ private static boolean repeatUse(ServerPlayer player, HitResult hit, int uses) {
                             InteractionResult result = player.gameMode.useItemOn(player, world, player.getItemInHand(hand), hand, blockHit);
                             if (result instanceof InteractionResult.Success success) {
                                 if (success.swingSource() != InteractionResult.SwingSource.NONE)
-                                    player.swing(hand);
+                                    player.swing(hand, player.getItemInHand(hand).getAttackAnimation(), false);
                                 ap.itemUseCooldown = 3;
                                 return true;
                             }

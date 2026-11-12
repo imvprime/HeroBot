@@ -1,5 +1,6 @@
 package hero.bane.herobot.mod.common.mixin;
 
+import net.minecraft.world.entity.EntityTypes;
 import hero.bane.herobot.common.rule.HeroBotSettings;
 import net.minecraft.server.commands.RideCommand;
 import net.minecraft.world.entity.Entity;
@@ -20,8 +21,8 @@ public class RideCommandMixin {
     )
     private static EntityType<?> allowPlayerMounts(Entity entity) {
         EntityType<?> type = entity.getType();
-        if (type == EntityType.PLAYER && HeroBotSettings.editablePlayerNbt) {
-            return EntityType.PIG;
+        if (type == EntityTypes.PLAYER && HeroBotSettings.editablePlayerNbt) {
+            return EntityTypes.PIG;
         }
         return type;
     }

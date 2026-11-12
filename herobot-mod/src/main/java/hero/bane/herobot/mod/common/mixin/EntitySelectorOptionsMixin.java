@@ -2,7 +2,7 @@ package hero.bane.herobot.mod.common.mixin;
 
 import hero.bane.herobot.mod.common.util.EntitySelectorSharedState;
 import net.fabricmc.fabric.mixin.command.EntitySelectorOptionsAccessor;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;

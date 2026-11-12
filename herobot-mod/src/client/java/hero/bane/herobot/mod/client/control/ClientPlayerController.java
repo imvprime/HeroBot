@@ -6,7 +6,7 @@ import hero.bane.herobot.mod.common.bot.BotPlayerActionPack.ActionType;
 import hero.bane.herobot.mod.client.mixin.KeyboardHandlerInvoker;
 import hero.bane.herobot.mod.client.mixin.MouseHandlerInvoker;
 import hero.bane.herobot.mod.common.control.PlayerController;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -17,7 +17,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.*;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -163,18 +162,16 @@ public final class ClientPlayerController implements PlayerController {
     @SuppressWarnings("resource")
     private static void sendKey(KeyMapping mapping, boolean down) {
         Minecraft mc = mc();
-        if (mc.screen != null || mc.getOverlay() != null) return;
-        InputConstants.Key key = KeyBindingHelper.getBoundKeyOf(mapping);
+        if (mc.gui.screen() != null || mc.gui.overlay() != null) return;
+        InputConstants.Key key = KeyMappingHelper.getBoundKeyOf(mapping);
         if (key.equals(InputConstants.UNKNOWN)) return;
         long window = mc.getWindow().handle();
-        int action = down ? GLFW.GLFW_PRESS : GLFW.GLFW_RELEASE;
+        int action = down ? InputConstants.PRESS : InputConstants.RELEASE;
         switch (key.getType()) {
             case MOUSE -> ((MouseHandlerInvoker) mc.mouseHandler)
                     .herobot$onButton(window, new MouseButtonInfo(key.getValue(), 0), action);
-            case KEYSYM -> ((KeyboardHandlerInvoker) mc.keyboardHandler)
+            case KEYBOARD -> ((KeyboardHandlerInvoker) mc.keyboardHandler)
                     .herobot$keyPress(window, action, new KeyEvent(key.getValue(), 0, 0));
-            case SCANCODE -> ((KeyboardHandlerInvoker) mc.keyboardHandler)
-                    .herobot$keyPress(window, action, new KeyEvent(InputConstants.UNKNOWN.getValue(), key.getValue(), 0));
         }
     }
 
@@ -186,9 +183,9 @@ public final class ClientPlayerController implements PlayerController {
             return;
         }
         switch (type) {
-            case SWING -> { if (p != null) p.swing(InteractionHand.MAIN_HAND); }
-            case DROP_ITEM -> { if (p != null && p.drop(false)) p.swing(InteractionHand.MAIN_HAND); }
-            case DROP_STACK -> { if (p != null && p.drop(true)) p.swing(InteractionHand.MAIN_HAND); }
+            case SWING -> { if (p != null) p.swing(InteractionHand.MAIN_HAND, p.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false); }
+            case DROP_ITEM -> { if (p != null && mc().gameMode != null) { mc().gameMode.dropItem(p, false); p.swing(InteractionHand.MAIN_HAND, p.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false); } }
+            case DROP_STACK -> { if (p != null && mc().gameMode != null) { mc().gameMode.dropItem(p, true); p.swing(InteractionHand.MAIN_HAND, p.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false); } }
         }
     }
 

@@ -1,16 +1,11 @@
 package hero.bane.herobot.mod.client.screen.ai.starfield;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
-import net.minecraft.client.renderer.RenderPipelines;
 import org.joml.Matrix3x2f;
 import org.jspecify.annotations.Nullable;
 
-public final class PixelBatch implements GuiElementRenderState {
+public final class PixelBatch {
     private int[] coords = new int[4096];
     private int[] colors = new int[1024];
     private int count;
@@ -23,7 +18,7 @@ public final class PixelBatch implements GuiElementRenderState {
     public PixelBatch() {
     }
 
-    public void begin(GuiGraphics g, int left, int top, int right, int bottom) {
+    public void begin(GuiGraphicsExtractor g, int left, int top, int right, int bottom) {
         count = 0;
         pose = new Matrix3x2f(g.pose());
         scissor = new ScreenRectangle(left, top, right - left, bottom - top).transformAxisAligned(pose);
@@ -54,7 +49,7 @@ public final class PixelBatch implements GuiElementRenderState {
         rect(x, y, x + 1, y + 1, argb);
     }
 
-    public void submit(GuiGraphics g) {
+    public void submit(GuiGraphicsExtractor g) {
         if (count == 0) return;
         ScreenRectangle box = new ScreenRectangle(minX, minY, maxX - minX, maxY - minY).transformMaxBounds(pose);
         bounds = scissor == null ? box : scissor.intersection(box);
@@ -62,45 +57,20 @@ public final class PixelBatch implements GuiElementRenderState {
             count = 0;
             return;
         }
-        g.guiRenderState.submitGuiElement(this);
+        // 26.3: custom GUI render states use the new render pipeline; draw the batch as plain fills instead.
+        boolean clip = scissor != null;
+        if (clip) g.enableScissor(scissor.left(), scissor.top(), scissor.right(), scissor.bottom());
+        for (int i = 0; i < count; i++) {
+            int j = i * 4;
+            g.fill(coords[j], coords[j + 1], coords[j + 2], coords[j + 3], colors[i]);
+        }
+        if (clip) g.disableScissor();
+        count = 0;
     }
 
     private void grow() {
         int newCap = colors.length * 2;
         coords = java.util.Arrays.copyOf(coords, newCap * 4);
         colors = java.util.Arrays.copyOf(colors, newCap);
-    }
-
-    @Override
-    public void buildVertices(VertexConsumer vc) {
-        for (int i = 0; i < count; i++) {
-            int j = i * 4;
-            int x0 = coords[j], y0 = coords[j + 1], x1 = coords[j + 2], y1 = coords[j + 3];
-            int col = colors[i];
-            vc.addVertexWith2DPose(pose, x0, y0).setColor(col);
-            vc.addVertexWith2DPose(pose, x0, y1).setColor(col);
-            vc.addVertexWith2DPose(pose, x1, y1).setColor(col);
-            vc.addVertexWith2DPose(pose, x1, y0).setColor(col);
-        }
-    }
-
-    @Override
-    public RenderPipeline pipeline() {
-        return RenderPipelines.GUI;
-    }
-
-    @Override
-    public TextureSetup textureSetup() {
-        return TextureSetup.noTexture();
-    }
-
-    @Override
-    public @Nullable ScreenRectangle scissorArea() {
-        return scissor;
-    }
-
-    @Override
-    public @Nullable ScreenRectangle bounds() {
-        return bounds;
     }
 }

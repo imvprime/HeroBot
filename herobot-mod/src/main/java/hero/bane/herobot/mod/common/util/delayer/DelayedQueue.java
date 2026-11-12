@@ -81,8 +81,6 @@ public final class DelayedQueue {
                         entity.getRotationVector(),
                         (ServerLevel) entity.level(),
                         PermissionSet.ALL_PERMISSIONS,
-                        entity.getName().getString(),
-                        entity.getDisplayName(),
                         server,
                         entity
                 ).withCallback(CommandResultCallback.EMPTY);
@@ -94,14 +92,12 @@ public final class DelayedQueue {
 
                 source = new CommandSourceStack(
                         server,
-                        executor.pos.getCenter(),
+                        net.minecraft.world.phys.Vec3.atCenterOf(executor.pos),
                         Vec2.ZERO,
                         level,
                         PermissionSet.ALL_PERMISSIONS,
-                        "@",
                         Component.literal("@"),
-                        server,
-                        null
+                        server
                 ).withCallback(CommandResultCallback.EMPTY);
 
             } else {

@@ -7,7 +7,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.AbstractMinecartRenderer;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
@@ -27,22 +26,21 @@ public abstract class AbstractMinecartRendererMixin {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Redirect(
-            method = "submit(Lnet/minecraft/client/renderer/entity/state/MinecartRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+            method = "submit(Lnet/minecraft/client/renderer/entity/state/MinecartRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                    target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/resources/Identifier;III)V"
             )
     )
     private void herobot$ghostInvisibleCart(SubmitNodeCollector collector, Model model, Object state, PoseStack poseStack,
-                                            RenderType renderType, int light, int overlay, int outlineColor,
-                                            ModelFeatureRenderer.CrumblingOverlay crumbling) {
+                                            Identifier texture, int light, int overlay, int outlineColor) {
         LocalPlayer viewer = Minecraft.getInstance().player;
         if (state instanceof MinecartRenderState cart && cart.isInvisible && viewer != null && viewer.isSpectator()) {
             collector.submitModel(model, state, poseStack,
-                    RenderTypes.itemEntityTranslucentCull(herobot$MINECART_LOCATION),
-                    light, overlay, herobot$GHOST_COLOR, null, outlineColor, crumbling);
+                    RenderTypes.entityTranslucentCull(texture),
+                    light, overlay, herobot$GHOST_COLOR, null, outlineColor);
         } else {
-            collector.submitModel(model, state, poseStack, renderType, light, overlay, outlineColor, crumbling);
+            collector.submitModel(model, state, poseStack, texture, light, overlay, outlineColor);
         }
     }
 }

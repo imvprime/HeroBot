@@ -13,7 +13,7 @@ import hero.bane.herobot.mod.common.mixin.LivingEntityAccessor;
 import hero.bane.herobot.mod.common.mixin.ServerCommonPacketListenerImplAccessor;
 import hero.bane.herobot.mod.common.mixin.ServerPlayerAccessor;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
@@ -562,7 +562,7 @@ public class BotPlayer extends ServerPlayer {
     }
 
     @Override
-    public void knockback(double strength, double x, double z) {
+    public void knockback(double strength, double x, double z, net.minecraft.world.damagesource.DamageSource knockbackSource, float knockbackDamage, boolean knockbackFlag) {
         if (this.getAbilities().invulnerable) return;
         scaledKnockback(strength, x, z, 1.0);
     }
@@ -582,7 +582,7 @@ public class BotPlayer extends ServerPlayer {
 
     private void applyKnockbackWithScale(double strength, double x, double z, double horizontalScale) {
         if (horizontalScale >= 1.0) {
-            super.knockback(strength, x, z);
+            super.knockback(strength, x, z, null, 0.0F, false);
             return;
         }
         double d = strength * (1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
@@ -673,7 +673,7 @@ public class BotPlayer extends ServerPlayer {
                 return false;
             }
 
-            if (damageSource.is(DamageTypeTags.IS_FREEZING) && this.getType().is(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES)) {
+            if (damageSource.is(DamageTypeTags.IS_FREEZING) && this.typeHolder().is(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES)) {
                 finalDamage *= 5.0F;
             }
 
@@ -687,7 +687,7 @@ public class BotPlayer extends ServerPlayer {
             }
 
             boolean cleanHit = true;
-            if ((float) this.invulnerableTime > (float) HeroBotSettings.damageTicks && !damageSource.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
+            if ((float) this.getInvulnerableTime() > (float) HeroBotSettings.damageTicks && !damageSource.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
                 if (finalDamage <= this.lastHurt) {
                     return false;
                 }
@@ -697,7 +697,7 @@ public class BotPlayer extends ServerPlayer {
                 cleanHit = false;
             } else {
                 this.lastHurt = finalDamage;
-                this.invulnerableTime = HeroBotSettings.damageInvulnerableTicks();
+                this.setInvulnerableTime(HeroBotSettings.damageInvulnerableTicks());
                 this.actuallyHurt(serverLevel, damageSource, finalDamage);
                 if (!blocked) {
                     this.hurtDuration = HeroBotSettings.damageTicks;
@@ -872,7 +872,7 @@ public class BotPlayer extends ServerPlayer {
     }
 
     @Override
-    protected void blockUsingItem(@NonNull ServerLevel serverLevel, LivingEntity livingEntity) {
+    protected void blockUsingItem(@NonNull ServerLevel serverLevel, LivingEntity livingEntity, net.minecraft.world.damagesource.DamageSource blockedSource, float blockedDamage, boolean blockedFlag) {
         ItemStack itemStack = this.getItemBlockingWith();
         BlocksAttacks blocksAttacks = itemStack != null ? itemStack.get(DataComponents.BLOCKS_ATTACKS) : null;
         float f = livingEntity.getSecondsToDisableBlocking();

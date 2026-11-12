@@ -1,5 +1,6 @@
 package hero.bane.herobot.mod.client.screen.ai;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import hero.bane.herobot.common.ai.AiScript;
 import hero.bane.herobot.common.ai.Comment;
 import hero.bane.herobot.common.ai.VarType;
@@ -16,8 +17,7 @@ import hero.bane.herobot.mod.client.screen.ai.starfield.PixelBatch;
 import hero.bane.herobot.mod.client.screen.ai.starfield.StarField;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -206,7 +206,7 @@ public final class ScriptCanvas {
         shiftRightSpawn = false;
     }
 
-    public void render(GuiGraphics g, int mouseX, int mouseY) {
+    public void render(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         frameLayouts.clear();
         caching = true;
         try {
@@ -217,7 +217,7 @@ public final class ScriptCanvas {
         }
     }
 
-    private void renderInner(GuiGraphics g, int mouseX, int mouseY) {
+    private void renderInner(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         g.fill(left, top, right, bottom, 0xFF12131A);
         g.enableScissor(left, top, right, bottom);
         drawGrid(g);
@@ -503,7 +503,7 @@ public final class ScriptCanvas {
     private static final double GRID_WARP_STRENGTH = 5.0;
     private static final int GRID_DOT_ALPHA = 0x20;
 
-    private void drawGrid(GuiGraphics g) {
+    private void drawGrid(GuiGraphicsExtractor g) {
         int alpha = (int) Math.round(GRID_DOT_ALPHA * StarField.gridVisibility(zoom));
         if (alpha <= 0) return;
         int argb = (alpha << 24) | 0xFFFFFF;
@@ -552,17 +552,17 @@ public final class ScriptCanvas {
         gridBatch.submit(g);
     }
 
-    private void drawWire(GuiGraphics g, int x1, int y1, int x2, int y2, int color) {
+    private void drawWire(GuiGraphicsExtractor g, int x1, int y1, int x2, int y2, int color) {
         drawWire(g, x1, y1, x2, y2, (y1 + y2) / 2, color);
     }
 
-    private void drawWire(GuiGraphics g, int x1, int y1, int x2, int y2, int midY, int color) {
+    private void drawWire(GuiGraphicsExtractor g, int x1, int y1, int x2, int y2, int midY, int color) {
         fillV(g, x1, y1, midY, color);
         fillH(g, x1, x2, midY, color);
         fillV(g, x2, midY, y2, color);
     }
 
-    private void drawWireH(GuiGraphics g, int x1, int y1, int x2, int y2) {
+    private void drawWireH(GuiGraphicsExtractor g, int x1, int y1, int x2, int y2) {
         int midX = (x1 + x2) / 2;
         int color = 0xFFFFFF66;
         fillH(g, x1, midX, y1, color);
@@ -570,11 +570,11 @@ public final class ScriptCanvas {
         fillH(g, midX, x2, y2, color);
     }
 
-    private static void fillV(GuiGraphics g, int x, int ya, int yb, int color) {
+    private static void fillV(GuiGraphicsExtractor g, int x, int ya, int yb, int color) {
         g.fill(x - 1, Math.min(ya, yb) - 1, x + 1, Math.max(ya, yb) + 1, color);
     }
 
-    private static void fillH(GuiGraphics g, int xa, int xb, int y, int color) {
+    private static void fillH(GuiGraphicsExtractor g, int xa, int xb, int y, int color) {
         g.fill(Math.min(xa, xb) - 1, y - 1, Math.max(xa, xb) + 1, y + 1, color);
     }
 
@@ -621,7 +621,7 @@ public final class ScriptCanvas {
         return lane != null ? lane : (y1 + y2) / 2;
     }
 
-    private static void drawSpliceBorder(GuiGraphics g, BlockRenderer.Layout L, boolean valid) {
+    private static void drawSpliceBorder(GuiGraphicsExtractor g, BlockRenderer.Layout L, boolean valid) {
         int c = valid ? SPLICE_OK : SPLICE_BAD;
         g.fill(L.x - 2, L.y - 2, L.x + L.w + 2, L.y - 1, c);
         g.fill(L.x - 2, L.y + L.h + 1, L.x + L.w + 2, L.y + L.h + 2, c);
@@ -629,25 +629,25 @@ public final class ScriptCanvas {
         g.fill(L.x + L.w + 1, L.y - 1, L.x + L.w + 2, L.y + L.h + 1, c);
     }
 
-    private void drawThickWire(GuiGraphics g, int x1, int y1, int x2, int y2) {
+    private void drawThickWire(GuiGraphicsExtractor g, int x1, int y1, int x2, int y2) {
         int midY = (y1 + y2) / 2;
         fillThickV(g, x1, y1, midY, PAIR_WIRE_COLOR);
         fillThickH(g, x1, x2, midY, PAIR_WIRE_COLOR);
         fillThickV(g, x2, midY, y2, PAIR_WIRE_COLOR);
     }
 
-    private void drawThickWireH(GuiGraphics g, int x1, int y1, int x2, int y2, int color) {
+    private void drawThickWireH(GuiGraphicsExtractor g, int x1, int y1, int x2, int y2, int color) {
         int midX = (x1 + x2) / 2;
         fillThickH(g, x1, midX, y1, color);
         fillThickV(g, midX, y1, y2, color);
         fillThickH(g, midX, x2, y2, color);
     }
 
-    private static void fillThickV(GuiGraphics g, int x, int ya, int yb, int color) {
+    private static void fillThickV(GuiGraphicsExtractor g, int x, int ya, int yb, int color) {
         g.fill(x - 2, Math.min(ya, yb) - 2, x + 3, Math.max(ya, yb) + 2, color);
     }
 
-    private static void fillThickH(GuiGraphics g, int xa, int xb, int y, int color) {
+    private static void fillThickH(GuiGraphicsExtractor g, int xa, int xb, int y, int color) {
         g.fill(Math.min(xa, xb) - 2, y - 2, Math.max(xa, xb) + 2, y + 3, color);
     }
 
@@ -1149,7 +1149,7 @@ public final class ScriptCanvas {
         script().putBlock(child);
     }
 
-    private void drawSlotHighlight(GuiGraphics g, BlockInstance target, String slot, boolean valid) {
+    private void drawSlotHighlight(GuiGraphicsExtractor g, BlockInstance target, String slot, boolean valid) {
         for (BlockRenderer.ChipRect c : nestedLayoutOf(target).chips) {
             if (!c.name().equals(slot)) continue;
             int col = valid ? 0xFFE6E600 : 0xFFFF3030;
@@ -1202,7 +1202,7 @@ public final class ScriptCanvas {
             stopEditingComment();
         }
 
-        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && shift) {
+        if (button == InputConstants.MOUSE_BUTTON_RIGHT && shift) {
             shiftRightSpawn = true;
             shiftRightDragged = false;
             spawnStartTick = starTick;
@@ -1213,9 +1213,9 @@ public final class ScriptCanvas {
             return true;
         }
 
-        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) { rightPressed = true; rightDownX = mx; rightDownY = my; return true; }
+        if (button == InputConstants.MOUSE_BUTTON_RIGHT) { rightPressed = true; rightDownX = mx; rightDownY = my; return true; }
 
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && shift && doubled) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && shift && doubled) {
             Hit bypass = deepHit(worldX, worldY);
             if (bypass != null && bypass.parent() == null) {
                 host.bypassBlock(bypass.block().id());
@@ -1224,8 +1224,8 @@ public final class ScriptCanvas {
             }
         }
 
-        if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE
-                || (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && shift)) { panning = true; return true; }
+        if (button == InputConstants.MOUSE_BUTTON_MIDDLE
+                || (button == InputConstants.MOUSE_BUTTON_LEFT && shift)) { panning = true; return true; }
 
         Comment cm = commentAt(worldX, worldY);
         if (cm != null) {
@@ -1372,7 +1372,7 @@ public final class ScriptCanvas {
             return true;
         }
 
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && stars.blackHoleGrabbed(mx, my)) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && stars.blackHoleGrabbed(mx, my)) {
             double[] pos = stars.blackHolePos();
             if (pos != null) {
                 holeDrag = true;
@@ -1685,7 +1685,7 @@ public final class ScriptCanvas {
     }
 
     public boolean mouseReleased(double mx, double my, int button) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && shiftRightSpawn) {
+        if (button == InputConstants.MOUSE_BUTTON_RIGHT && shiftRightSpawn) {
             shiftRightSpawn = false;
             if (shiftRightDragged) {
                 stars.spawnConverging(Math.max(1, spawnCount), left, top, right, bottom, SPAWN_BURST_MEET);
@@ -1695,7 +1695,7 @@ public final class ScriptCanvas {
             }
             return true;
         }
-        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && rightPressed) {
+        if (button == InputConstants.MOUSE_BUTTON_RIGHT && rightPressed) {
             rightPressed = false;
             panning = false;
             if (Math.hypot(mx - rightDownX, my - rightDownY) < RIGHT_CLICK_SLOP) openContextMenu(mx, my);
@@ -2212,7 +2212,7 @@ public final class ScriptCanvas {
         return new int[]{sx(cX(editing)), sy(cY(editing)) - FMT_BTN - 2};
     }
 
-    private void renderFormatBar(GuiGraphics g, double mx, double my) {
+    private void renderFormatBar(GuiGraphicsExtractor g, double mx, double my) {
         int[] r = formatBarRect();
         int bx = r[0], by = r[1];
         g.fill(bx - 1, by - 1, bx + FMT_BTN * FMT_FLAGS.length + 1, by + FMT_BTN + 1, 0xFF000000);
@@ -2222,7 +2222,7 @@ public final class ScriptCanvas {
             boolean hover = mx >= x && mx < x + FMT_BTN && my >= by && my < by + FMT_BTN;
             g.fill(x, by, x + FMT_BTN - 1, by + FMT_BTN, on ? 0xFF3A7AE0 : hover ? 0xFF555555 : 0xFF2A2A2A);
             int tw = font.width(FMT_LABELS[i]);
-            g.drawString(font, FMT_LABELS[i], x + (FMT_BTN - tw) / 2,
+            g.text(font, FMT_LABELS[i], x + (FMT_BTN - tw) / 2,
                     by + (FMT_BTN - font.lineHeight) / 2 + 1, 0xFFFFFFFF, false);
         }
     }
@@ -2249,46 +2249,46 @@ public final class ScriptCanvas {
         String t = editing.text();
         if (ctrl) {
             switch (key) {
-                case GLFW.GLFW_KEY_A -> { selAnchor = 0; caret = t.length(); }
-                case GLFW.GLFW_KEY_C -> copySelectionToClipboard();
-                case GLFW.GLFW_KEY_X -> {
+                case InputConstants.KEY_A -> { selAnchor = 0; caret = t.length(); }
+                case InputConstants.KEY_C -> copySelectionToClipboard();
+                case InputConstants.KEY_X -> {
                     if (hasSelection()) { copySelectionToClipboard(); commentEditSnapshot(); deleteSelection(); }
                 }
-                case GLFW.GLFW_KEY_V -> pasteClipboard();
-                case GLFW.GLFW_KEY_B -> toggleStyle(Comment.BOLD);
-                case GLFW.GLFW_KEY_I -> toggleStyle(Comment.ITALIC);
-                case GLFW.GLFW_KEY_U -> toggleStyle(Comment.UNDERLINE);
-                case GLFW.GLFW_KEY_S -> { if (shift) toggleStyle(Comment.STRIKE); }
-                case GLFW.GLFW_KEY_LEFT -> moveCaret(wordStart(t, caret), shift);
-                case GLFW.GLFW_KEY_RIGHT -> moveCaret(wordEnd(t, caret), shift);
-                case GLFW.GLFW_KEY_HOME -> moveCaret(0, shift);
-                case GLFW.GLFW_KEY_END -> moveCaret(t.length(), shift);
-                case GLFW.GLFW_KEY_BACKSPACE -> deleteTo(wordStart(t, caret));
-                case GLFW.GLFW_KEY_DELETE -> deleteTo(wordEnd(t, caret));
+                case InputConstants.KEY_V -> pasteClipboard();
+                case InputConstants.KEY_B -> toggleStyle(Comment.BOLD);
+                case InputConstants.KEY_I -> toggleStyle(Comment.ITALIC);
+                case InputConstants.KEY_U -> toggleStyle(Comment.UNDERLINE);
+                case InputConstants.KEY_S -> { if (shift) toggleStyle(Comment.STRIKE); }
+                case InputConstants.KEY_LEFT -> moveCaret(wordStart(t, caret), shift);
+                case InputConstants.KEY_RIGHT -> moveCaret(wordEnd(t, caret), shift);
+                case InputConstants.KEY_HOME -> moveCaret(0, shift);
+                case InputConstants.KEY_END -> moveCaret(t.length(), shift);
+                case InputConstants.KEY_BACKSPACE -> deleteTo(wordStart(t, caret));
+                case InputConstants.KEY_DELETE -> deleteTo(wordEnd(t, caret));
                 default -> { }
             }
             return true;
         }
         switch (key) {
-            case GLFW.GLFW_KEY_ESCAPE -> stopEditingComment();
-            case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> {
+            case InputConstants.KEY_ESCAPE -> stopEditingComment();
+            case InputConstants.KEY_RETURN, InputConstants.KEY_NUMPADENTER -> {
                 if (shift) insertText("\n", activeStyle);
                 else stopEditingComment();
             }
-            case GLFW.GLFW_KEY_BACKSPACE -> deleteTo(Math.max(0, caret - 1));
-            case GLFW.GLFW_KEY_DELETE -> deleteTo(Math.min(t.length(), caret + 1));
-            case GLFW.GLFW_KEY_LEFT -> {
+            case InputConstants.KEY_BACKSPACE -> deleteTo(Math.max(0, caret - 1));
+            case InputConstants.KEY_DELETE -> deleteTo(Math.min(t.length(), caret + 1));
+            case InputConstants.KEY_LEFT -> {
                 if (!shift && hasSelection()) moveCaret(selStart(), false);
                 else moveCaret(Math.max(0, caret - 1), shift);
             }
-            case GLFW.GLFW_KEY_RIGHT -> {
+            case InputConstants.KEY_RIGHT -> {
                 if (!shift && hasSelection()) moveCaret(selEnd(), false);
                 else moveCaret(Math.min(t.length(), caret + 1), shift);
             }
-            case GLFW.GLFW_KEY_UP -> moveCaretLine(-1, shift);
-            case GLFW.GLFW_KEY_DOWN -> moveCaretLine(1, shift);
-            case GLFW.GLFW_KEY_HOME -> moveCaret(caretLine()[0], shift);
-            case GLFW.GLFW_KEY_END -> moveCaret(caretLine()[1], shift);
+            case InputConstants.KEY_UP -> moveCaretLine(-1, shift);
+            case InputConstants.KEY_DOWN -> moveCaretLine(1, shift);
+            case InputConstants.KEY_HOME -> moveCaret(caretLine()[0], shift);
+            case InputConstants.KEY_END -> moveCaret(caretLine()[1], shift);
             default -> {  }
         }
         return true;

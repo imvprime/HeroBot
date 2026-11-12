@@ -306,34 +306,15 @@ public final class PingBoostHandler extends ChannelDuplexHandler {
         if (packet instanceof ServerboundMovePlayerPacket move && move.hasRotation()) {
             return PingDelayOptions.Category.LOOK;
         }
-        if (packet instanceof ServerboundInteractPacket interact) {
-            return attackOrUse(interact);
+        if (packet instanceof net.minecraft.network.protocol.game.ServerboundAttackPacket) {
+            return PingDelayOptions.Category.ATTACK;
+        }
+        if (packet instanceof ServerboundInteractPacket) {
+            return PingDelayOptions.Category.USE;
         }
         return null;
     }
 
-    private static PingDelayOptions.Category attackOrUse(ServerboundInteractPacket interact) {
-        InteractionKind kind = new InteractionKind();
-        interact.dispatch(kind);
-        return kind.attack ? PingDelayOptions.Category.ATTACK : PingDelayOptions.Category.USE;
-    }
-
-    private static final class InteractionKind implements ServerboundInteractPacket.Handler {
-        boolean attack;
-
-        @Override
-        public void onInteraction(@NonNull InteractionHand hand) {
-        }
-
-        @Override
-        public void onInteraction(@NonNull InteractionHand hand, @NonNull Vec3 pos) {
-        }
-
-        @Override
-        public void onAttack() {
-            attack = true;
-        }
-    }
 
     private boolean delays(Packet<?> packet) {
         PingDelayOptions.Category category = categoryOf(packet);

@@ -53,7 +53,7 @@ public final class BlockPlacer {
         BlockHitResult hit = new BlockHitResult(hitLoc, face, support, false);
         InteractionResult result = blockItem.place(new BlockPlaceContext(player, InteractionHand.MAIN_HAND, stack, hit));
         if (result instanceof InteractionResult.Success) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
             player.resetLastActionTime();
             return true;
         }
